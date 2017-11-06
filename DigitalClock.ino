@@ -11,7 +11,7 @@
 Adafruit_NeoPixel ringled = Adafruit_NeoPixel(NBPIXELS_RINGLED, PIN_RINGLED, NEO_GRB + NEO_KHZ800);
 
 
-int pix_hour, pix_minute, pix_seconde, pix_dixseconde, lastpix_dixseconde;
+int pix_hour, pix_hour_last, pix_minute, pix_minute_last, pix_seconde, pix_seconde_last, pix_dixseconde, pix_dixseconde_last;
 unsigned long startmillis;
 
 libDS3231 rtc;
@@ -52,6 +52,10 @@ void setup() {
 	ringled.setBrightness(light);
 	ringled.begin();
 	ringled.show();
+
+	//Initialze
+	gethour(&pix_hour);
+	gethour(&pix_hour_last);
 }
 
 //
@@ -64,12 +68,30 @@ void loop() {
 
 	//Get time
 	now = rtc.getDateTime();
-	pix_hour = now.Hour()+ (now.Minute() / 5);
+
+	//Calculation
+	gethour(&pix_hour);
 	ringled.setPixelColor(pix_hour, color_hour);
+
+	pix_minute = now.Minute();
+
+	pix_seconde = now.Second();
+
 
 	ringled.show();
 }
 
+
+//
+// readInput
+//
+void gethour(int *pix_hour) {
+	if (now.Hour() >= 12)
+		*pix_hour = (now.Hour() - 12) * 5;
+	else
+		*pix_hour = now.Hour() * 5;
+	*pix_hour += now.Minute() / 15;
+}
 
 //
 // readInput
