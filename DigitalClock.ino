@@ -56,6 +56,7 @@ void setup() {
 	//Initialze
 	gethour(&pix_hour_last);
 	pix_minute_last = now.Minute();
+	pix_seconde_last = now.Second();
 }
 
 //
@@ -86,7 +87,11 @@ void loop() {
 
 
 	pix_seconde = now.Second();
-
+	if (pix_seconde != pix_seconde_last) {
+		ringled.setPixelColor(pix_seconde_last, 0);
+		pix_seconde_last = pix_seconde;
+	}
+	ringled.setPixelColor(pix_seconde, color_seconde);
 
 	ringled.show();
 }
@@ -131,7 +136,7 @@ void readInput()
 	//Load input light 
 	if (digitalRead(PIN_LIGHT) == HIGH && !bfm_light) {
 		bfm_light = true;
-		light += 20;
+		light += 10;
 		if (light > 255)
 			light = 10;
 	}
