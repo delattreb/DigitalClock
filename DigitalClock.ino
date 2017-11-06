@@ -54,8 +54,8 @@ void setup() {
 	ringled.show();
 
 	//Initialze
-	gethour(&pix_hour);
 	gethour(&pix_hour_last);
+	pix_minute_last = now.Minute();
 }
 
 //
@@ -71,9 +71,19 @@ void loop() {
 
 	//Calculation
 	gethour(&pix_hour);
+	if(pix_hour != pix_hour_last){
+		ringled.setPixelColor(pix_hour_last, 0);
+		pix_hour_last = pix_hour;
+	}
 	ringled.setPixelColor(pix_hour, color_hour);
 
 	pix_minute = now.Minute();
+	if (pix_minute != pix_minute_last) {
+		ringled.setPixelColor(pix_minute_last, 0);
+		pix_minute_last = pix_minute;
+	}
+	ringled.setPixelColor(pix_minute, color_minute);
+
 
 	pix_seconde = now.Second();
 
