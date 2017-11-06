@@ -57,6 +57,7 @@ void setup() {
 	gethour(&pix_hour_last);
 	pix_minute_last = now.Minute();
 	pix_seconde_last = now.Second();
+	pix_dixseconde_last = (millis() - startmillis) / 10;
 }
 
 //
@@ -72,7 +73,7 @@ void loop() {
 
 	//Calculation
 	gethour(&pix_hour);
-	if(pix_hour != pix_hour_last){
+	if (pix_hour != pix_hour_last) {
 		ringled.setPixelColor(pix_hour_last, 0);
 		pix_hour_last = pix_hour;
 	}
@@ -91,14 +92,33 @@ void loop() {
 		ringled.setPixelColor(pix_seconde_last, 0);
 		pix_seconde_last = pix_seconde;
 	}
-	ringled.setPixelColor(pix_seconde, color_seconde);
+	if (checkDisplay(pix_seconde))
+		ringled.setPixelColor(pix_seconde, color_seconde);
+
+	pix_dixseconde = (millis() - startmillis) / 10;
+	if (pix_dixseconde != pix_dixseconde_last) {
+		ringled.setPixelColor(pix_dixseconde_last, 0);
+		pix_dixseconde_last = pix_dixseconde;
+	}
+	if (checkDisplay(pix_dixseconde))
+		ringled.setPixelColor(pix_dixseconde, color_dixseconde);
+
+	Serial.print("Time: ");
+	unsigned long time = millis()/10;
+	Serial.println(time);    
 
 	ringled.show();
 }
 
-
 //
 // readInput
+//
+boolean checkDisplay(int pix) {
+	return !(pix == pix_hour || pix == pix_minute);
+}
+
+//
+// gethour
 //
 void gethour(int *pix_hour) {
 	if (now.Hour() >= 12)
