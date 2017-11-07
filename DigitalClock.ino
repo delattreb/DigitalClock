@@ -12,7 +12,6 @@ Adafruit_NeoPixel ringled = Adafruit_NeoPixel(NBPIXELS_RINGLED, PIN_RINGLED, NEO
 
 
 int pix_hour, pix_hour_last, pix_minute, pix_minute_last, pix_seconde, pix_seconde_last, pix_dixseconde, pix_dixseconde_last;
-unsigned long startmillis;
 
 libDS3231 rtc;
 RtcDateTime now;
@@ -46,7 +45,6 @@ void setup() {
 
 	setColor(color);
 	rtc.init(false);
-	startmillis = millis();
 
 	// Init NeoPixel
 	ringled.setBrightness(light);
@@ -54,10 +52,11 @@ void setup() {
 	ringled.show();
 
 	//Initialze
+	mode = 2;
 	gethour(&pix_hour_last);
 	pix_minute_last = now.Minute();
 	pix_seconde_last = now.Second();
-	pix_dixseconde_last = (millis() - startmillis) / 10;
+	pix_dixseconde_last = (millis() / 10) % 60;
 }
 
 //
@@ -71,7 +70,9 @@ void loop() {
 	//Get time
 	now = rtc.getDateTime();
 
-	//Calculation
+	//Display time
+
+	//Hour
 	gethour(&pix_hour);
 	if (pix_hour != pix_hour_last) {
 		ringled.setPixelColor(pix_hour_last, 0);
@@ -79,6 +80,7 @@ void loop() {
 	}
 	ringled.setPixelColor(pix_hour, color_hour);
 
+	//Minute
 	pix_minute = now.Minute();
 	if (pix_minute != pix_minute_last) {
 		ringled.setPixelColor(pix_minute_last, 0);
@@ -87,33 +89,31 @@ void loop() {
 	ringled.setPixelColor(pix_minute, color_minute);
 
 
+	//Seconde
 	pix_seconde = now.Second();
 	if (pix_seconde != pix_seconde_last) {
 		ringled.setPixelColor(pix_seconde_last, 0);
 		pix_seconde_last = pix_seconde;
 	}
-	if (checkDisplay(pix_seconde))
+	if (checkDisplayHM(pix_seconde))
 		ringled.setPixelColor(pix_seconde, color_seconde);
 
-	pix_dixseconde = (millis() - startmillis) / 10;
+	//Dixseconde
+	pix_dixseconde = (millis() / 10) % 60;
 	if (pix_dixseconde != pix_dixseconde_last) {
 		ringled.setPixelColor(pix_dixseconde_last, 0);
 		pix_dixseconde_last = pix_dixseconde;
 	}
-	if (checkDisplay(pix_dixseconde))
+	if (checkDisplayHM(pix_dixseconde))
 		ringled.setPixelColor(pix_dixseconde, color_dixseconde);
-
-	Serial.print("Time: ");
-	unsigned long time = millis()/10;
-	Serial.println(time);    
 
 	ringled.show();
 }
 
 //
-// readInput
+// checkDisplayHM
 //
-boolean checkDisplay(int pix) {
+boolean checkDisplayHM(int pix) {
 	return !(pix == pix_hour || pix == pix_minute);
 }
 
@@ -126,6 +126,16 @@ void gethour(int *pix_hour) {
 	else
 		*pix_hour = now.Hour() * 5;
 	*pix_hour += now.Minute() / 15;
+}
+
+
+//
+// Display5
+//
+void display5()
+{
+	for (int i = 0; i <= 55; i += 5)
+		ringled.setPixelColor(i, color_dixseconde);
 }
 
 //
