@@ -12,21 +12,23 @@ Adafruit_NeoPixel ringled = Adafruit_NeoPixel(NBPIXELS_RINGLED, PIN_RINGLED, NEO
 
 
 int pix_hour, pix_hour_last, pix_minute, pix_minute_last, pix_seconde, pix_seconde_last, pix_dixseconde, pix_dixseconde_last;
-
+unsigned long startmillis;
 libDS3231 rtc;
 RtcDateTime now;
 int color = 0, mode = 0, light = 55;
 boolean bfm_mode = false, bfm_color = false, bfm_light = false;
 
 // Color
-int colorTable[4][4][3] = { { { 0,0,255 },{ 0,0,255 },{ 220,0,255 },{ 255,40,40 } },
-{ { 255,45,0 },{ 255,45,0 },{ 255,200,0 },{ 40,255,40 } },
-{ { 0,255,45 },{ 0,255,45 },{ 0,200,200 },{ 150,150,0 } },
-{ { 255, 0, 0 },{ 255,0,0 },{ 255,45,0 },{ 255,0,255 } } };
+int colorTable[4][5][3] = {
+{ { 0,0,255  },{ 0,0,255  },{ 220,0,255 },{ 255,40,40 },{ 0,0,5 } },
+{ { 255,45,0 },{ 255,45,0 },{ 255,200,0 },{ 40,255,40 },{ 4,1,0 } },
+{ { 0,255,45 },{ 0,255,45 },{ 0,200,200 },{ 150,150,0 },{ 0,4,1 } },
+{ { 255, 0, 0 },{ 255,0,0 },{ 255,45,0  },{ 255,0,255 },{ 5,0,0 } } };
 uint32_t color_hour;
 uint32_t color_minute;
 uint32_t color_seconde;
 uint32_t color_dixseconde;
+uint32_t color_cadran;
 
 //
 // setup
@@ -38,6 +40,7 @@ void setup() {
 		;
 	}
 #endif 
+	startmillis = millis();
 
 	pinMode(PIN_MODE, INPUT);
 	pinMode(PIN_COLOR, INPUT);
@@ -56,7 +59,7 @@ void setup() {
 	gethour(&pix_hour_last);
 	pix_minute_last = now.Minute();
 	pix_seconde_last = now.Second();
-	pix_dixseconde_last = (millis() / 10) % 60;
+	pix_dixseconde_last = round(millis() / 12.15) % 60;
 }
 
 //
@@ -66,6 +69,7 @@ void loop() {
 	readInput();
 	setColor(color);
 	ringled.setBrightness(light);
+	display5();
 
 	//Get time
 	now = rtc.getDateTime();
@@ -88,24 +92,27 @@ void loop() {
 	}
 	ringled.setPixelColor(pix_minute, color_minute);
 
-
 	//Seconde
 	pix_seconde = now.Second();
 	if (pix_seconde != pix_seconde_last) {
 		ringled.setPixelColor(pix_seconde_last, 0);
 		pix_seconde_last = pix_seconde;
 	}
-	if (checkDisplayHM(pix_seconde))
-		ringled.setPixelColor(pix_seconde, color_seconde);
+	if (mode > 0) {
+		if (checkDisplayHM(pix_seconde))
+			ringled.setPixelColor(pix_seconde, color_seconde);
+	}
 
 	//Dixseconde
-	pix_dixseconde = (millis() / 10) % 60;
-	if (pix_dixseconde != pix_dixseconde_last) {
+	pix_dixseconde = round(millis() / 12.6) % 60;
+	if ((pix_dixseconde != pix_dixseconde_last) && checkDisplayHM(pix_dixseconde) && checkDisplayS(pix_dixseconde)) {
 		ringled.setPixelColor(pix_dixseconde_last, 0);
 		pix_dixseconde_last = pix_dixseconde;
 	}
-	if (checkDisplayHM(pix_dixseconde))
-		ringled.setPixelColor(pix_dixseconde, color_dixseconde);
+	if (mode > 1) {
+		if (checkDisplayHM(pix_dixseconde))
+			ringled.setPixelColor(pix_dixseconde, color_dixseconde);
+	}
 
 	ringled.show();
 }
@@ -118,6 +125,14 @@ boolean checkDisplayHM(int pix) {
 }
 
 //
+// checkDisplayS
+//
+boolean checkDisplayS(int pix) {
+	return !(pix == pix_seconde);
+}
+
+
+//
 // gethour
 //
 void gethour(int *pix_hour) {
@@ -125,7 +140,7 @@ void gethour(int *pix_hour) {
 		*pix_hour = (now.Hour() - 12) * 5;
 	else
 		*pix_hour = now.Hour() * 5;
-	*pix_hour += now.Minute() / 15;
+	*pix_hour += now.Minute() / 12;
 }
 
 
@@ -135,7 +150,7 @@ void gethour(int *pix_hour) {
 void display5()
 {
 	for (int i = 0; i <= 55; i += 5)
-		ringled.setPixelColor(i, color_dixseconde);
+		ringled.setPixelColor(i, color_cadran);
 }
 
 //
@@ -183,5 +198,6 @@ void setColor(int col)
 	color_minute = ringled.Color(colorTable[col][1][0], colorTable[col][1][1], colorTable[col][1][2], GAMMA);
 	color_seconde = ringled.Color(colorTable[col][2][0], colorTable[col][2][1], colorTable[col][2][2], GAMMA);
 	color_dixseconde = ringled.Color(colorTable[col][3][0], colorTable[col][3][1], colorTable[col][3][2], GAMMA);
+	color_cadran = ringled.Color(colorTable[col][4][0], colorTable[col][4][1], colorTable[col][4][2], GAMMA);
 }
 
