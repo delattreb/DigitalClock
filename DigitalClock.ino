@@ -59,7 +59,7 @@ void setup() {
 	gethour(&pix_hour_last);
 	pix_minute_last = now.Minute();
 	pix_seconde_last = now.Second();
-	pix_dixseconde_last = round(millis() / 12.15) % 60;
+	pix_dixseconde_last = round(millis() / TIMEADJUST) % 60;
 }
 
 //
@@ -104,7 +104,7 @@ void loop() {
 	}
 
 	//Dixseconde
-	pix_dixseconde = round(millis() / 12.6) % 60;
+	pix_dixseconde = round(millis() / TIMEADJUST) % 60;
 	if ((pix_dixseconde != pix_dixseconde_last) && checkDisplayHM(pix_dixseconde) && checkDisplayS(pix_dixseconde)) {
 		ringled.setPixelColor(pix_dixseconde_last, 0);
 		pix_dixseconde_last = pix_dixseconde;
@@ -131,7 +131,6 @@ boolean checkDisplayS(int pix) {
 	return !(pix == pix_seconde);
 }
 
-
 //
 // gethour
 //
@@ -142,7 +141,6 @@ void gethour(int *pix_hour) {
 		*pix_hour = now.Hour() * 5;
 	*pix_hour += now.Minute() / 12;
 }
-
 
 //
 // Display5
@@ -162,7 +160,7 @@ void readInput()
 	if (digitalRead(PIN_MODE) == HIGH && !bfm_mode) {
 		bfm_mode = true;
 		mode += 1;
-		if (mode > 2)
+		if (mode > MAXMODE)
 			mode = 0;
 	}
 	if (digitalRead(PIN_MODE) == LOW)
@@ -172,7 +170,7 @@ void readInput()
 	if (digitalRead(PIN_COLOR) == HIGH && !bfm_color) {
 		bfm_color = true;
 		color += 1;
-		if (color > 3)
+		if (color > MAXCOLOR)
 			color = 0;
 	}
 	if (digitalRead(PIN_COLOR) == LOW)
@@ -181,9 +179,9 @@ void readInput()
 	//Load input light 
 	if (digitalRead(PIN_LIGHT) == HIGH && !bfm_light) {
 		bfm_light = true;
-		light += 10;
+		light += INCREMENT;
 		if (light > 255)
-			light = 10;
+			light = INCREMENT;
 	}
 	if (digitalRead(PIN_LIGHT) == LOW)
 		bfm_light = false;
