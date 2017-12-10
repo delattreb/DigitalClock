@@ -18,6 +18,7 @@ RtcDateTime now;
 int color = 0, mode = 0, light = 55;
 boolean berase = false, bfm_mode = false, bfm_color = false, bfm_light = false;
 
+
 // Color
 int colorTable[4][5][3] = {
 { { 0,0,255  },{ 0,0,255  },{ 220,0,255 },{ 255,40,40 },{ 0,0,5 } },
