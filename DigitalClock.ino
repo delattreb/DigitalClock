@@ -16,13 +16,13 @@ unsigned long startmillis;
 libDS3231 rtc;
 RtcDateTime now;
 int color = 0, mode = 0, light = 55;
-boolean bfm_mode = false, bfm_color = false, bfm_light = false;
+boolean berase = false, bfm_mode = false, bfm_color = false, bfm_light = false;
 
 // Color
 int colorTable[4][5][3] = {
 { { 0,0,255  },{ 0,0,255  },{ 220,0,255 },{ 255,40,40 },{ 0,0,5 } },
-{ { 255,45,0 },{ 255,45,0 },{ 255,200,0 },{ 40,255,40 },{ 4,1,0 } },
-{ { 0,255,45 },{ 0,255,45 },{ 0,200,200 },{ 150,150,0 },{ 0,4,1 } },
+{ { 255,45,0 },{ 255,45,0 },{ 255,200,0 },{ 40,255,40 },{ 5,1,0 } },
+{ { 0,255,45 },{ 0,255,45 },{ 0,200,200 },{ 150,150,0 },{ 0,5,1 } },
 { { 255, 0, 0 },{ 255,0,0 },{ 255,45,0  },{ 255,0,255 },{ 5,0,0 } } };
 uint32_t color_hour;
 uint32_t color_minute;
@@ -97,6 +97,7 @@ void loop() {
 	if (pix_seconde != pix_seconde_last) {
 		ringled.setPixelColor(pix_seconde_last, 0);
 		pix_seconde_last = pix_seconde;
+		startmillis = millis();
 	}
 	if (mode > 0) {
 		if (checkDisplayHM(pix_seconde))
@@ -104,16 +105,19 @@ void loop() {
 	}
 
 	//Dixseconde
-	pix_dixseconde = round(millis() / TIMEADJUST) % 60;
+	pix_dixseconde = round((millis() - startmillis) / TIMEADJUST) % 60;
 	if ((pix_dixseconde != pix_dixseconde_last) && checkDisplayHM(pix_dixseconde) && checkDisplayS(pix_dixseconde)) {
-		ringled.setPixelColor(pix_dixseconde_last, 0);
-		pix_dixseconde_last = pix_dixseconde;
+		if (mode > 1 || !berase) {
+			ringled.setPixelColor(pix_dixseconde_last, 0);
+			pix_dixseconde_last = pix_dixseconde;
+			berase = true;
+		}
 	}
 	if (mode > 1) {
+		berase = false;
 		if (checkDisplayHM(pix_dixseconde))
 			ringled.setPixelColor(pix_dixseconde, color_dixseconde);
 	}
-
 	ringled.show();
 }
 
