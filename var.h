@@ -23,7 +23,7 @@
 #define MAXMODE 2
 
 //COLOR
-#define MAXCOLOR 3
+#define MAXCOLOR 4
 
 //TIME
 #define TIMEADJUST 12.55
