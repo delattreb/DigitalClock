@@ -6,7 +6,7 @@
 #include "var.h"
 #include "libDS3231.h"
 #include "libAdafruitNeoPixel.h"
-
+#include <SoftwareSerial.h>
 // Var
 Adafruit_NeoPixel ringled = Adafruit_NeoPixel(NBPIXELS_RINGLED, PIN_RINGLED, NEO_GRB + NEO_KHZ800);
 
@@ -17,6 +17,7 @@ libDS3231 rtc;
 RtcDateTime now;
 int color = 0, mode = 0, light = 55;
 boolean berase = false, bfm_mode = false, bfm_color = false, bfm_light = false;
+SoftwareSerial mySerial(BTRX, BTTX); // RX, TX
 
 
 // Color
@@ -36,6 +37,7 @@ uint32_t color_cadran;
 // setup
 //
 void setup() {
+	mySerial.begin(BTBAUDS_RATE);
 #ifdef DEBUG
 	Serial.begin(BAUDS_RATE);
 	while (!Serial) {
@@ -61,13 +63,17 @@ void setup() {
 	gethour(&pix_hour_last);
 	pix_minute_last = now.Minute();
 	pix_seconde_last = now.Second();
-	pix_dixseconde_last = round(millis() / TIMEADJUST) % 60;
+	pix_dixseconde_last = lround(millis() / TIMEADJUSTED) % 60;
 }
 
 //
 // loop
 //
 void loop() {
+	//Check BT information
+	if (mySerial.available())
+		rtc.setDateTimeStr(mySerial.readString());
+
 	readInput();
 	setColor(color);
 	ringled.setBrightness(light);
@@ -107,7 +113,7 @@ void loop() {
 	}
 
 	//Dixseconde
-	pix_dixseconde = round((millis() - startmillis) / TIMEADJUST) % 60;
+	pix_dixseconde = lround((millis() - startmillis) / TIMEADJUSTED) % 60;
 	if ((pix_dixseconde != pix_dixseconde_last) && checkDisplayHM(pix_dixseconde) && checkDisplayS(pix_dixseconde)) {
 		if (mode > 1 || !berase) {
 			ringled.setPixelColor(pix_dixseconde_last, 0);

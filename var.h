@@ -3,6 +3,7 @@
 //#define DEBUG
 //#define INFO
 #define BAUDS_RATE 115200
+#define BTBAUDS_RATE 9600
 
 #define NBREMANANCE	4
 
@@ -26,6 +27,12 @@
 #define MAXCOLOR 4
 
 //TIME
-#define TIMEADJUST 12.55
+#define TIMEADJUSTED 12.55
+
+//BLUETOOTH
+#define BTRX 6
+#define BTTX 5
+
+
 
 
